@@ -2,6 +2,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.swing.JPanel;
 
@@ -9,6 +10,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
 
 	ArrayList<Block> blocks = new ArrayList<Block>();
 	ArrayList<Block> ball = new ArrayList<Block>();
+	ArrayList<Block> powerup = new ArrayList<Block>();
 	Block paddle;
 	Thread thread;
 	Animate animate;
@@ -31,7 +33,13 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
 		for (int i = 0; i < 8; i++) {
 			blocks.add(new Block((i * 60 + 2), 75, 60, 25, "yellow.png"));
 		}
-
+		Random random = new Random();
+		blocks.get(random.nextInt(32)).powerup = true;
+		blocks.get(random.nextInt(32)).powerup = true;
+		blocks.get(random.nextInt(32)).powerup = true;
+		blocks.get(random.nextInt(32)).powerup = true;
+		blocks.get(random.nextInt(32)).powerup = true;
+		blocks.get(random.nextInt(32)).powerup = true;
 		ball.add(new Block(237, 437, 25, 25, "ball.png"));
 		addKeyListener(this);
 		setFocusable(true);
@@ -45,10 +53,20 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
 		for (Block b : ball) {
 			b.draw(g, this);
 		}
+		for (Block p : powerup) {
+			p.draw(g, this);
+		}
 		paddle.draw(g, this);
 	}
 
 	public void update() {
+		for (Block p : powerup) {
+			p.y += 1;
+			if (p.intersects(paddle) && !p.destroyed) {
+				p.destroyed = true;
+				ball.add(new Block(paddle.dx + 75, 437, 25, 25, "ball.png"));
+			}
+		}
 		for (Block ba : ball) {
 			ba.x += ba.dx;
 			if (ba.x > (getWidth() - size) && ba.dx > 0 || ba.x < 0) {
@@ -59,9 +77,18 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
 			}
 			ba.y += ba.dy;
 			for (Block b : blocks) {
-				if (ba.intersects(b) && !b.destroyed) {
+				if ((b.left.intersects(ba) || b.right.intersects(ba)) && !b.destroyed) {
+					ba.dx *= -1;
+					b.destroyed = true;
+					if (b.powerup) {
+						powerup.add(new Block(b.x, b.y, 25, 19, "extra.png"));
+					}
+				} else if (ba.intersects(b) && !b.destroyed) {
 					b.destroyed = true;
 					ba.dy *= -1;
+					if (b.powerup) {
+						powerup.add(new Block(b.x, b.y, 25, 19, "extra.png"));
+					}
 				}
 			}
 		}
