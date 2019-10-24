@@ -5,8 +5,9 @@ public class Animate implements Runnable {
 	Animate(BlockBreakerPanel b) {
 		bp = b;
 	}
+
 	public void run() {
-		while(true) {
+		while (true) {
 			bp.update();
 			try {
 				Thread.sleep(10);
